@@ -13,16 +13,15 @@ pipeline {
         }
 
         stage('Build & Test') {
+            agent {
+                docker {
+                    image 'python:3.9-slim'
+                    args '-v /var/run/docker.sock:/var/run/docker.sock'
+                }
+            }
             steps {
-                // Either run tests directly in the container…
-                sh '''
-                    pip install -r requirements.txt
-                    pytest
-                '''
-
-                // …or use Docker (since you have the host Docker socket)
-                // docker build -t my-flask-app:test .
-                // docker run --rm my-flask-app:test pytest
+                sh 'pip install -r requirements.txt'
+                sh 'pytest'
             }
         }
 
