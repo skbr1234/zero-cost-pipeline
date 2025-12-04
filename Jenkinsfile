@@ -5,11 +5,13 @@ pipeline {
         stage('Setup') {
             steps {
                 echo 'Installing Python and Dependencies...'
-                // Install Python3 and pip using the package manager (apt-get for Debian/Ubuntu)
-                sh 'apt-get update'
-                sh 'apt-get install -y python3 python3-pip'
-                // Install Python dependencies (flask, pytest, gunicorn)
-                sh 'pip install -r requirements.txt'                
+                // Running these commands with elevated privileges (sudo/root)
+                sh """
+                    apt-get update && \
+                    apt-get install -y python3 python3-pip
+                """
+                // Note: The 'pip' command below runs as the 'jenkins' user but now works because Python is installed
+                sh 'pip install -r requirements.txt'               
             }
         }
         
