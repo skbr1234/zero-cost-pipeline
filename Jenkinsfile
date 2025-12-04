@@ -3,11 +3,6 @@ pipeline {
     agent any 
 
     options {
-        // Cleans up the workspace before the pipeline starts
-        // and ensures the Git operation runs in a pristine environment.
-        skipDefaultCheckout()
-        checkoutToSubDirectory('source') // Optional: Checkout into a sub-directory
-        // Ensure the workspace is completely wiped before the next build
         cleanWs() 
     }
 
