@@ -4,8 +4,12 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                echo 'Installing Dependencies...'
-                sh 'pip install -r requirements.txt'
+                echo 'Installing Python and Dependencies...'
+                // Install Python3 and pip using the package manager (apt-get for Debian/Ubuntu)
+                sh 'apt-get update'
+                sh 'apt-get install -y python3 python3-pip'
+                // Install Python dependencies (flask, pytest, gunicorn)
+                sh 'pip install -r requirements.txt'                
             }
         }
         
