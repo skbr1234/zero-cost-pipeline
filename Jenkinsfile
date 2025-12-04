@@ -1,13 +1,13 @@
 pipeline {
-    agent {
-        // Use a specific Python image version (e.g., Python 3.9)
-        docker { image 'python:3.9-slim' }        
-    }
+    agent any
 
     stages {
         stage('Setup') {
             steps {
                 echo 'Installing Python and Dependencies...'
+                // Install Python3 and pip using the package manager (apt-get for Debian/Ubuntu)
+                sh 'apt-get update'
+                sh 'apt-get install -y python3 python3-pip'
                 // Install Python dependencies (flask, pytest, gunicorn)
                 sh 'pip install -r requirements.txt'                
             }
