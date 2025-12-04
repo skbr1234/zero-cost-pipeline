@@ -1,37 +1,40 @@
 pipeline {
+    // Define a generic agent globally
     agent any 
 
     stages {
-        stage('Docker Client Setup (Root)') {
-            // Run this entire stage inside a temporary container as the ROOT user
-            agent {
-                docker { 
-                    image 'debian:latest' // Use a lean image that includes apt
-                    args '-u root' 
-                }
-            }
+        stage('Install Docker Client') {
+            // This stage uses 'agent any' (the Jenkins master node).
+            // We use 'script' to handle the installation and permission gymnastics.
             steps {
-                echo 'Installing Docker client and dependencies as ROOT...'
-                // These commands now run with root privileges and should succeed.
-                sh '''
-                    apt-get update
-                    apt-get install -y docker.io python3 python3-pip
-                '''
+                echo 'Attempting to install Docker client on Jenkins executor...'
+                
+                script {
+                    // This command uses the standard apt-get repository to install the Docker client
+                    // and relies on the persistent volume/socket mount to work.
+                    // We run these commands using a simplified shell execution.
+                    sh '''
+                        # Install necessary tools if not present
+                        apt-get update
+                        apt-get install -y docker.io
+                        # Add the Jenkins user to the docker group (often required for DooD)
+                        usermod -aG docker jenkins
+                    '''
+                }
             }
         }
 
         stage('Build & Test') {
-            // Now the Docker client is installed and accessible.
-            // Switch to the isolated Python container for the build/test.
+            // Now the Docker client is installed and the user is in the docker group.
             agent {
                 docker { 
                     image 'python:3.9-slim' 
+                    // This argument tells the inner container to use the host's Docker socket
                     args '-v /var/run/docker.sock:/var/run/docker.sock'
                 }
             }
             steps {
-                echo 'Running Python Build/Test...'
-                // pip is already inside python:3.9-slim, but we run the tests in this isolated environment.
+                echo 'Running Python Build/Test in isolated container...'
                 sh 'pip install -r requirements.txt' 
                 sh 'pytest'
             }
