@@ -2,6 +2,15 @@ pipeline {
     // Define a generic agent globally
     agent any 
 
+    options {
+        // Cleans up the workspace before the pipeline starts
+        // and ensures the Git operation runs in a pristine environment.
+        skipDefaultCheckout()
+        checkoutToSubDirectory('source') // Optional: Checkout into a sub-directory
+        // Ensure the workspace is completely wiped before the next build
+        cleanWs() 
+    }
+
     stages {
         stage('Install Docker Client') {
             // This stage uses 'agent any' (the Jenkins master node).
