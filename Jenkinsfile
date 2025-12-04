@@ -1,28 +1,28 @@
 pipeline {
-
-    agent any
+    // Default agent for stages that don't need special privileges
+    agent any 
 
     stages {
-
-        stage('Docker Client Setup') {
+        stage('Docker Client Setup (Root)') {
+            // Temporarily run this stage as the root user to install packages
+            agent {
+                label 'master' // Use the built-in Jenkins executor
+                // Execute commands as root user
+                args '-u root' 
+            }
             steps {
-                echo 'Ensuring Docker client is available...'
-                // Install the Docker CLI in the Jenkins container
-                // This is needed because the base image does not have the docker executable.
+                echo 'Ensuring Docker client is available (Running as root)...'
                 sh '''
-                    # Check if docker is already installed. If not, install it.
-                    if ! command -v docker &> /dev/null; then
-                        echo "Docker client not found. Installing..."
-                        apt-get update
-                        apt-get install -y docker.io
-                    fi
+                    # Install Docker client and clean up
+                    apt-get update
+                    apt-get install -y docker.io
+                    apt-get clean
                 '''
             }
         }
 
-
         stage('Build & Test') {
-            // Now that the Docker client is installed, we can use the Docker agent block
+            // Now that Docker is installed, switch to the isolated Python container
             agent {
                 docker { 
                     image 'python:3.9-slim' 
@@ -37,16 +37,15 @@ pipeline {
                 sh 'pytest'
             }
         }
-
+        
         stage('Deploy') {
-            // We can switch back to agent any here as the final curl doesn't need Docker
-            agent any
+            agent any // Use the built-in Jenkins executor for the final curl command
             steps {
                 echo 'Tests Passed! Deploying to Render...'
                 withCredentials([string(credentialsId: 'RENDER_DEPLOY_HOOK_URL', variable: 'RENDER_DEPLOY_HOOK_URL')]) {
                     sh 'curl -X POST $RENDER_DEPLOY_HOOK_URL'
                 }
             }
-        }        
+        }
     }
 }
