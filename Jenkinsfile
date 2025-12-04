@@ -1,17 +1,18 @@
 pipeline {
-    agent any
+
+    // 1. Tell Jenkins to run all subsequent stages inside this Python image
+    agent {
+        docker { 
+            image 'python:3.9-slim' 
+        }
+    }
 
     stages {
         stage('Setup') {
             steps {
-                echo 'Installing Python and Dependencies...'
-                // Running these commands with elevated privileges (sudo/root)
-                sh """
-                    apt-get update && \
-                    apt-get install -y python3 python3-pip
-                """
-                // Note: The 'pip' command below runs as the 'jenkins' user but now works because Python is installed
-                sh 'pip install -r requirements.txt'               
+                echo 'Installing Python Dependencies...'
+                // Python and pip are already available thanks to the Docker agent
+                sh 'pip install -r requirements.txt'             
             }
         }
         
