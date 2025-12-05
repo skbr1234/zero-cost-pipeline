@@ -8,20 +8,23 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
-            agent {
-                docker {
-                    image 'python:3.9-slim'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
+        stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                // Using python3 that we installed into the Jenkins container
+                sh 'python3 -m pip install -r requirements.txt'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
                 sh 'pytest'
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Render') {
+            when {
+                branch 'jenkins-demo'  // only auto-deploy from this branch
+            }
             steps {
                 withCredentials([string(credentialsId: 'RENDER_DEPLOY_HOOK_URL', variable: 'RENDER_DEPLOY_HOOK_URL')]) {
                     sh 'curl -X POST "$RENDER_DEPLOY_HOOK_URL"'
