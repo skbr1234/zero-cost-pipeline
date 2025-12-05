@@ -25,9 +25,6 @@ pipeline {
         }
 
         stage('Deploy to Render') {
-            when {
-                branch 'jenkins-demo'
-            }
             steps {
                 withCredentials([string(credentialsId: 'RENDER_DEPLOY_HOOK_URL', variable: 'RENDER_DEPLOY_HOOK_URL')]) {
                     sh 'curl -X POST "$RENDER_DEPLOY_HOOK_URL"'
