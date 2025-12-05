@@ -10,20 +10,23 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                // Using python3 that we installed into the Jenkins container
-                sh 'python3 -m pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv .venv
+                    .venv/bin/pip install --upgrade pip
+                    .venv/bin/pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'pytest'
+                sh '.venv/bin/pytest'
             }
         }
 
         stage('Deploy to Render') {
             when {
-                branch 'jenkins-demo'  // only auto-deploy from this branch
+                branch 'jenkins-demo'
             }
             steps {
                 withCredentials([string(credentialsId: 'RENDER_DEPLOY_HOOK_URL', variable: 'RENDER_DEPLOY_HOOK_URL')]) {
