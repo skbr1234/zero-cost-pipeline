@@ -30,8 +30,6 @@ Build + Test (PyTest)
 Render Deployment (Deploy Hook)
 ```
 
-![Jenkins CI/CD Architecture](./docs/jenkins-architecture.svg)
-
 ---
 
 ## 📁 Project Structure (this branch)
